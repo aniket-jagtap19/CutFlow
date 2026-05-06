@@ -1,4 +1,14 @@
-django>=4.2
+Django==5.0.4
+weasyprint>=68.0
+openpyxl==3.1.2
+ortools==9.12.4544
+simpleeval==0.9.13
+psycopg2-binary>=2.9.11
+python-decouple==3.8
+Pillow==12.2.0
+django-crispy-forms==2.1
+crispy-tailwind==1.0.3
+whitenoise==6.7.0
 reportlab>=4.0
-openpyxl>=3.1
 gunicorn>=21.0
+mysqlclient>=2.2
