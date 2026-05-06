@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CutFlow – Window & Door Fabrication Software</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:   #0D1B2A;
+  --gold:  #C9922A;
+  --gold2: #E8B04B;
+  --blue:  #1E3A5F;
+  --steel: #2D5282;
+  --mist:  #EDF2F7;
+  --fog:   #A0AEC0;
+  --white: #FFFFFF;
+  --red:   #E53E3E;
+  --green: #276749;
+  --card-r: 12px;
+  --trans:  all .25s cubic-bezier(.4,0,.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  
+  font-family: 'Inter', sans-serif;
+  background: var(--ink);
+  color: var(--white);
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+
+}
+
+/* ── Background grid ─────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(201,146,42,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,146,42,.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+.app { .app {
+  position: relative;
+  z-index: 1;
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  flex : 1;
+} }
+
+/* ── Topbar ──────────────────────────────────────────────────── */
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 0 16px;
+  border-bottom: 1px solid rgba(201,146,42,.25);
+}
+.logo { display: flex; align-items: center; gap: 14px; }
+.logo-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-family: font-family: Franklin Gothic;
+  font-weight: 800; font-size: 18px;
+  color: var(--ink);
+  box-shadow: 0 0 20px rgba(201,146,42,.4);
+}
+.logo-text h1 {
+  font-family: 'Syne', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  color: var(--white);
+}
+.logo-text p { font-size: 11px; color: var(--fog); letter-spacing: 2px; text-transform: uppercase; }
+.badge {
+  background: rgba(201,146,42,.15);
+  border: 1px solid rgba(201,146,42,.3);
+  color: var(--gold2);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; padding: 4px 10px; border-radius: 20px;
+}
+
+/* ── Layout grid ─────────────────────────────────────────────── */
+.layout { display: grid; grid-template-columns: 420px 1fr; gap: 28px; margin-top: 28px; align-items: start; }
+@media(max-width:900px){ .layout { grid-template-columns: 1fr; } }
+
+/* ── Panel shell ─────────────────────────────────────────────── */
+.panel {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: var(--card-r);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(201,146,42,.08);
+  border-bottom: 1px solid rgba(201,146,42,.2);
+}
+.panel-head h2 {
+  font-family: font-family: Franklin Gothic;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--gold2);
+}
+.panel-body { padding: 20px; }
+
+/* ── Form controls ───────────────────────────────────────────── */
+.window-list { display: flex; flex-direction: column; gap: 14px; }
+
+.window-card {
+  
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: var(--trans);
+}
+.window-card:hover { 
+  
+  border-color: rgba(201,146,42,.3); }
+
+.wcard-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(30,58,95,.4);
+  cursor: pointer;
+  user-select: none;
+}
+.wcard-head-left { display: flex; align-items: center; gap: 10px; }
+.wcard-num {
+  width: 26px; height: 26px; border-radius: 6px;
+  background: var(--gold); color: var(--ink);
+  font-family: font-family: Franklin Gothic;
+  font-weight: 800; font-size: 12px;
+  display: grid; place-items: center;
+}
+.wcard-title { font-weight: 600; font-size: 13px; }
+.wcard-subtitle { font-size: 11px; color: var(--fog); }
+.wcard-actions { display: flex; gap: 6px; align-items: center; }
+
+.btn-icon {
+  background: none; border: 1px solid rgba(255,255,255,.15);
+  color: var(--fog); width: 28px; height: 28px;
+  border-radius: 6px; cursor: pointer; font-size: 14px;
+  display: grid; place-items: center;
+  transition: var(--trans);
+}
+.btn-icon:hover { background: rgba(229,62,62,.15); border-color: var(--red); color: var(--red); }
+.btn-icon.toggle { font-size: 10px; }
+.btn-icon.toggle:hover { background: rgba(201,146,42,.1); border-color: var(--gold); color: var(--gold); }
+
+.wcard-body { padding: 14px; display: none; }
+.wcard-body.open { display: block; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-full { grid-column: 1/-1; }
+
+label { display: block; font-size: 11px; color: var(--fog); margin-bottom: 5px; letter-spacing: .5px; text-transform: uppercase; }
+
+input[type=text], input[type=number], select {
+  width: 100%;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  color: var(--white);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  padding: 9px 12px;
+  transition: var(--trans);
+  outline: none;
+  appearance: none;
+}
+input[type=text]:focus, input[type=number]:focus, select:focus {
+  border-color: var(--gold);
+  background: rgba(201,146,42,.06);
+  box-shadow: 0 0 0 3px rgba(201,146,42,.12);
+}
+select option { background: var(--ink); }
+
+.checkbox-row {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: var(--trans);
+}
+.checkbox-row:hover { border-color: var(--gold); }
+.checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; }
+.checkbox-row span { font-size: 12px; }
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 8px;
+  font-family: font-family: Franklin Gothic;
+  font-weight: 700; font-size: 12px; letter-spacing: .5px;
+  cursor: pointer; border: none;
+  transition: var(--trans);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: var(--ink);
+  box-shadow: 0 4px 16px rgba(201,146,42,.35);
+}
+.btn-gold:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(201,146,42,.5); }
+.btn-ghost {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.15);
+  color: var(--white);
+}
+.btn:active {
+  transform: scale(0.96);
+}
+.btn-ghost:hover { background: rgba(255,255,255,.1); }
+.btn-blue {
+  background: var(--blue);
+  border: 1px solid var(--steel);
+  color: var(--white);
+}
+.btn-blue:hover { background: var(--steel); }
+.btn-sm { padding: 7px 14px; font-size: 11px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+
+.action-row {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 16px;
+}
+
+/* ── Results panel ───────────────────────────────────────────── */
+.result-tabs {
+  display: flex; gap: 4px;
+  padding: 4px;
+  background: rgba(0,0,0,.2);
+  border-radius: 10px;
+}
+.tab-btn {
+  flex: 1; padding: 8px 12px;
+  background: none; border: none;
+  color: var(--fog); cursor: pointer;
+  font-family: Franklin Gothic ;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .5px;
+  border-radius: 8px;
+  transition: var(--trans);
+}
+.tab-btn.active {
+  background: var(--gold);
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(201,146,42,.4);
+}
+.tab-content { padding-top: 8px; display: none; }
+.tab-content.active { display: block; }
+
+/* ── Placeholder ─────────────────────────────────────────────── */
+.placeholder {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 60px 20px; text-align: center; gap: 12px;
+}
+.placeholder-icon { font-size: 48px; opacity: .3; }
+.placeholder h3 { font-family: font-family: Franklin Gothic; font-size: 16px; color: var(--fog); }
+.placeholder p { font-size: 12px; color: var(--fog); opacity: .6; max-width: 260px; line-height: 1.6; }
+
+/* ── Summary cards ───────────────────────────────────────────── */
+.summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
+@media(max-width:700px){ .summary-grid { grid-template-columns: 1fr 1fr; } }
+.stat-card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px; padding: 14px;
+}
+.stat-card .label { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 10px;
+  color: var(--fog);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+ }
+.stat-card .value { font-family: Franklin Gothic Medium; font-size: 22px; font-weight: 800; margin-top: 4px; }
+.stat-card .value.gold { color: var(--gold2); }
+.stat-card .value.green { color: #68D391; }
+
+/* ── Tables ──────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid rgba(255,255,255,.08); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead tr { background: rgba(30,58,95,.8); }
+thead th {
+  padding: 10px 12px; text-align: left;
+  font-family: font-family: Franklin Gothic;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--gold2); white-space: nowrap;
+}
+tbody tr:nth-child(odd)  { background: rgba(255,255,255,.015); }
+tbody tr:nth-child(even) { background: rgba(255,255,255,.005); }
+tbody tr:hover { background: rgba(201,146,42,.05); }
+tbody td {  padding: 9px 12px;
+  color: rgba(255,255,255,.85);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-align: left; }
+  tbody td:last-child,
+tbody td:nth-child(3),
+tbody td:nth-child(4),
+tbody td:nth-child(5),
+tbody td:nth-child(6) {
+  text-align: right;
+}
+tbody td:first-child { font-weight: 500; color: var(--white); }
+.total-row td { background: rgba(201,146,42,.15) !important; font-weight: 700; color: var(--gold2) !important; }
+
+/* ── Window result accordion ────────────────────────────────── */
+.win-result {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+}
+.win-result-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: rgba(30,58,95,.3);
+  cursor: pointer;
+}
+.win-code {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: var(--ink); font-family: font-family: Franklin Gothic;
+  font-weight: 800; font-size: 12px;
+  padding: 3px 10px; border-radius: 6px;
+  min-width: 60px; text-align: center;
+}
+.win-meta { flex: 1; }
+.win-meta strong { font-size: 13px; }
+.win-meta span { font-size: 11px; color: var(--fog); margin-left: 8px; }
+.win-total { font-family: font-family: Franklin Gothic; font-size: 15px; font-weight: 700; color: var(--gold2); }
+.win-result-body { padding: 16px; display: none; }
+.win-result-body.open { display: block; }
+
+.cost-breakdown {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 14px;
+}
+.cost-item {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 8px; padding: 10px 12px;
+}
+.cost-item .c-label { font-size: 10px; color: var(--fog); text-transform: uppercase; letter-spacing: .5px; }
+.cost-item .c-val { font-family: Franklin Gothic; font-size: 16px; font-weight: 700; margin-top: 2px; }
+
+/* ── Bar chart bars ──────────────────────────────────────────── */
+.bar-chart { display: flex; flex-direction: column; gap: 8px; }
+.bar-item { }
+.bar-meta { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+.bar-meta .b-profile { color: var(--white); font-weight: 600; }
+.bar-meta .b-stat { color: var(--fog); font-family: 'DM Mono', monospace; }
+.bar-track {
+  height: 18px; background: rgba(255,255,255,.07);
+  border-radius: 4px; overflow: hidden; position: relative;
+  border-radius: 6px;
+}
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--blue), var(--gold));
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+  display: flex; align-items: center; padding-left: 8px;
+   border-radius: 6px 0 0 6px;
+}
+.bar-fill span { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--white); white-space: nowrap; }
+.bar-waste {
+  position: absolute; right: 0; top: 0; height: 100%;
+  background: rgba(229,62,62,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: #FC8181;
+  padding: 0 6px;
+   border-radius: 0 6px 6px 0;
+}
+
+/* ── Download row ────────────────────────────────────────────── */
+.download-row {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  padding: 14px 0 0;
+  border-top: 1px solid rgba(255,255,255,.08);
+  margin-top: 16px;
+}
+
+/* ── Spinner ─────────────────────────────────────────────────── */
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(201,146,42,.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px; }
+.loading-state p { color: var(--fog); font-size: 13px; }
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--blue);
+  border: 1px solid var(--steel);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 13px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  animation: slideUp .3s ease;
+  max-width: 320px;
+}
+.toast.error { background: rgba(229,62,62,.15); border-color: var(--red); }
+.toast.success { background: rgba(39,103,73,.3); border-color: #276749; }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ── Section heading ─────────────────────────────────────────── */
+.section-title {
+  font-family: font-family: Franklin Gothic;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--gold2); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: rgba(201,146,42,.2);
+}
+
+/* ── Mesh toggle highlight ───────────────────────────────────── */
+.mesh-on { border-color: rgba(104,211,145,.3) !important; }
+
+/*loader styling */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(circle at top, rgba(201,146,42,.18), #020817 55%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preloader-inner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.preloader .logo-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  font-size: 24px;
+  box-shadow: 0 0 28px rgba(201,146,42,.55);
+}
+
+.preloader-text h2 {
+  font-family: font-family: Franklin Gothic;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.preloader-text p {
+  font-size: 12px;
+  color: var(--fog);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.preloader-bar {
+  margin-top: 10px;
+  width: 220px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.preloader-bar-fill {
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  animation: preloader-slide 1.1s ease-in-out infinite;
+}
+
+@keyframes preloader-slide {
+  0%   { transform: translateX(-80%); }
+  100% { transform: translateX(200%); }
+}
+
+.preloader.fade-out {
+  animation: preloader-fade .4s ease forwards;
+}
+
+@keyframes preloader-fade {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* footer */
+
+.footer {
+  margin-top: 100px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(6px);
+}
+
+.footer-inner {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.footer h3 {
+  font-family: font-family: Franklin Gothic;
+  font-size: 14px;
+  color: var(--gold2);
+}
+
+.footer p {
+  font-size: 11px;
+  color: var(--fog);
+}
+
+/* responsive */
+@media(max-width:700px){
+  .footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+</style>
+</head>
+<body>
+  
+
+<div id="preloader" class="preloader">
+  <div class="preloader-inner">
+    <div class="logo-icon">🪚</div>
+    <div class="preloader-text">
+      <h2>CutFlow</h2>
+      <p>Preparing optimisation engine…</p>
+      <div class="preloader-bar">
+        <div class="preloader-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🪚</div>
+      <div class="logo-text">
+        <h1>CutFlow</h1>
+        <p>Window & Door Fabrication Software</p>
+      </div>
+    </div>
+    
+    <div style="display: flex; gap: 12px; align-items: center;">
+      {% if request.user.is_authenticated %}
+        <div class="badge" style="background: rgba(39,103,73,.3); border-color: #276749; color: #68D391;">
+          👤 {{ request.user.username }}
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showMyProjects()"> My Projects</button>
+        <button class="btn btn-ghost btn-sm" onclick="logoutUser()"> Logout</button>
+      {% else %}
+        <div class="badge">v1.0 · D Sign Design</div>
+        <a href="/login/" class="btn btn-gold btn-sm">Sign In</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <div class="layout">
+
+    <!-- LEFT: Input Panel -->
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>📐 Window & Door Schedule</h2>
+          <button class="btn btn-gold btn-sm" onclick="addWindow()">+ Add Item</button>
+        </div>
+        <div class="panel-body">
+          <div class="window-list" id="windowList"></div>
+         <div class="action-row">
+            <button class="btn btn-gold" id="calcBtn" onclick="calculate()">
+               Calculate & Generate Reports
+            </button>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-ghost btn-sm" onclick="loadSample()">Load Sample</button>
+              {% if request.user.is_authenticated %}
+                <button class="btn btn-blue btn-sm" id="saveDbBtn" onclick="saveProjectToDB()">💾 Save Project</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Results Panel -->
+    <div>
+      <div class="panel" id="resultsPanel">
+        <div class="panel-head">
+          <h2> Results & Reports</h2>
+          <div id="downloadRow" style="display:none;" class="download-row" style="margin-top:0;padding-top:0;border:none;">
+            <button class="btn btn-ghost btn-sm" onclick="downloadPDF()">Download PDF Quotation</button>
+            <button class="btn btn-blue btn-sm" onclick="downloadExcel()"> Download Excel BOQ</button>
+          </div>
+        </div>
+        <div class="panel-body" id="resultsBody">
+          <div class="placeholder">
+            <div class="placeholder-icon">🪟</div>
+            <h3>No Calculations Yet</h3>
+            <p>Add windows or doors in the schedule panel, then click Calculate to generate profiles, glass, hardware BOQ, and bar optimisation reports.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+<div id="projectsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+  <div class="panel" style="width: 500px; max-width: 90%;">
+    <div class="panel-head">
+      <h2>My Saved Projects</h2>
+      <button class="btn-icon" onclick="document.getElementById('projectsModal').style.display='none'">✕</button>
+    </div>
+    <div class="panel-body" id="projectsList" style="max-height: 400px; overflow-y: auto;">
+      </div>
+  </div>
+</div>
+<footer class="footer">
+  <div class="footer-inner">
+
+    <div class="footer-left">
+      <h3>CutFlow</h3>
+      <p>Design · Optimise · Fabricate</p>
+    </div>
+
+    <div class="footer-center">
+      <p>Built for window & door fabricators</p>
+    </div>
+
+    <div class="footer-right">
+      <p>© 2026 CutFlow</p>
+    </div>
+
+  </div>
+</footer>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let windowData = [];
+let idCounter = 0;
+let lastResults = null;
+
+const TYPOLOGIES = {{ typologies|safe }};
+const GLASS_OPTS = {{ glass_options|safe }};
+const FINISH_OPTS = {{ finish_options|safe }};
+
+// Convert server dicts to arrays
+const typoArr = Object.entries(TYPOLOGIES).map(([k,v]) => ({key:k, label:v}));
+const glassArr = Object.entries(GLASS_OPTS).map(([k,v]) => ({key:k, label:v.label}));
+const finishArr = Object.entries(FINISH_OPTS).map(([k,v]) => ({key:k, label:v.label}));
+
+// ── Add Window ─────────────────────────────────────────────────
+function addWindow(data = null) {
+  const id = ++idCounter;
+  const d = data || {
+    code: `W${String(id).padStart(2,'0')}`,
+    width: 1200,
+    height: 1050,
+    typology: 'sliding',
+    glass_type: 'clear_4',
+    finish: 'powder',
+    mesh: false,
+    qty: 1,
+  };
+  windowData.push({id, ...d});
+  renderList();
+  setTimeout(() => openCard(id), 50);
+}
+
+function removeWindow(id) {
+  windowData = windowData.filter(w => w.id !== id);
+  renderList();
+}
+
+function openCard(id) {
+  const body = document.getElementById(`body_${id}`);
+  const arrow = document.getElementById(`arrow_${id}`);
+  if (body) { body.classList.add('open'); if(arrow) arrow.textContent = '▲'; }
+}
+
+function toggleCard(id) {
+  const body = document.getElementById(`body_${id}`);
+  const arrow = document.getElementById(`arrow_${id}`);
+  body.classList.toggle('open');
+  if(arrow) arrow.textContent = body.classList.contains('open') ? '▲' : '▼';
+}
+
+function updateField(id, field, value) {
+  const w = windowData.find(x => x.id === id);
+  if (!w) return;
+  if (field === 'mesh') w[field] = value;
+  else if (['width','height','qty'].includes(field)) w[field] = Number(value);
+  else w[field] = value;
+  // Update card subtitle
+  const sub = document.getElementById(`sub_${id}`);
+  if (sub) sub.textContent = `${w.typology} · ${w.width}×${w.height}mm · qty ${w.qty}`;
+}
+
+function buildOptions(arr, selected, field='key', label='label') {
+  return arr.map(o => `<option value="${o[field]}" ${o[field]===selected?'selected':''}>${o[label]}</option>`).join('');
+}
+
+function renderList() {
+  const list = document.getElementById('windowList');
+  if (windowData.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--fog);font-size:12px;">No openings added yet — click “Add Item"</div>';
+    return;
+  }
+  list.innerHTML = windowData.map((w,i) => `
+    <div class="window-card" id="card_${w.id}">
+      <div class="wcard-head" onclick="toggleCard(${w.id})">
+        <div class="wcard-head-left">
+          <div class="wcard-num">${i+1}</div>
+          <div>
+            <div class="wcard-title">${w.code}</div>
+            <div class="wcard-subtitle" id="sub_${w.id}">${w.typology} · ${w.width}×${w.height}mm · qty ${w.qty}</div>
+          </div>
+        </div>
+        <div class="wcard-actions">
+          <button class="btn-icon toggle" id="arrow_${w.id}" title="Expand">▼</button>
+          <button class="btn-icon" title="Remove" onclick="event.stopPropagation(); removeWindow(${w.id})">✕</button>
+        </div>
+      </div>
+      <div class="wcard-body" id="body_${w.id}">
+        <div class="form-grid">
+          <div class="form-full">
+            <label>Window Code / Name</label>
+            <input type="text" value="${w.code}" oninput="updateField(${w.id},'code',this.value)">
+          </div>
+          <div>
+            <label>Width (mm)</label>
+            <input type="number" value="${w.width}" min="300" max="5000" oninput="updateField(${w.id},'width',this.value)">
+          </div>
+          <div>
+            <label>Height (mm)</label>
+            <input type="number" value="${w.height}" min="300" max="4000" oninput="updateField(${w.id},'height',this.value)">
+          </div>
+          <div>
+            <label>Quantity</label>
+            <input type="number" value="${w.qty}" min="1" max="999" oninput="updateField(${w.id},'qty',this.value)">
+          </div>
+          <div>
+            <label>Typology</label>
+            <select onchange="updateField(${w.id},'typology',this.value)">
+              ${buildOptions(typoArr, w.typology)}
+            </select>
+          </div>
+          <div>
+            <label>Glass Type</label>
+            <select onchange="updateField(${w.id},'glass_type',this.value)">
+              ${buildOptions(glassArr, w.glass_type)}
+            </select>
+          </div>
+          <div>
+            <label>Finish</label>
+            <select onchange="updateField(${w.id},'finish',this.value)">
+              ${buildOptions(finishArr, w.finish)}
+            </select>
+          </div>
+          <div class="form-full">
+            <label class="checkbox-row ${w.mesh?'mesh-on':''}" id="meshLabel_${w.id}">
+              <input type="checkbox" ${w.mesh?'checked':''} onchange="updateField(${w.id},'mesh',this.checked); document.getElementById('meshLabel_${w.id}').classList.toggle('mesh-on',this.checked)">
+              <span> Include Insect Mesh / Fly Screen</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Calculate ──────────────────────────────────────────────────
+async function calculate() {
+  if (windowData.length === 0) { toast('Add at least one window first', 'error'); return; }
+
+  const btn = document.getElementById('calcBtn');
+  btn.disabled = true; btn.textContent = '⏳ Calculating…';
+
+  showLoading();
+
+  const payload = {
+    windows: windowData.map(w => ({
+      code: w.code, width: w.width, height: w.height,
+      typology: w.typology, glass_type: w.glass_type,
+      finish: w.finish, mesh: w.mesh, qty: w.qty,
+    }))
+  };
+
+  try {
+    const resp = await fetch('/calculate/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json',
+                 'X-CSRFToken': getCookie('csrftoken')},
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    if (!resp.ok) { toast(data.error || 'Calculation failed', 'error'); showPlaceholder(); return; }
+
+    lastResults = payload;
+    renderResults(data);
+    toast('Calculation complete!', 'success');
+    document.getElementById('downloadRow').style.display = 'flex';
+  } catch(e) {
+    toast('Network error: ' + e.message, 'error');
+    showPlaceholder();
+  } finally {
+    btn.disabled = false; btn.textContent = ' Calculate & Generate Reports';
+  }
+}
+
+function showLoading() {
+  document.getElementById('resultsBody').innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Computing profiles, bar optimisation & costs…</p>
+    </div>`;
+}
+
+function showPlaceholder() {
+  document.getElementById('resultsBody').innerHTML = `
+    <div class="placeholder">
+      <div class="placeholder-icon">⚠️</div>
+      <h3>Calculation Error</h3>
+      <p>Check your inputs and try again.</p>
+    </div>`;
+}
+
+// ── Render Results ──────────────────────────────────────────────
+function renderResults(data) {
+  const {windows, bar_summary, hardware_total, grand_total_ex_gst, gst, grand_total} = data;
+  const totalUnits = windows.reduce((a,w) => a + w.qty, 0);
+
+  const html = `
+  <!-- Summary Stats -->
+  <div class="summary-grid">
+    <div class="stat-card">
+      <div class="label">Total Units</div>
+      <div class="value">${totalUnits}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Subtotal</div>
+      <div class="value gold">₹${fmt(grand_total_ex_gst)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">GST (18% Govt.)</div>
+      <div class="value" style="font-size:20px;">₹${fmt(gst)}</div>
+    </div>
+    <div class="stat-card" style="border-color:rgba(201,146,42,.4);">
+      <div class="label">Grand Total</div>
+      <div class="value green">₹${fmt(grand_total)}</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="result-tabs">
+    <button class="tab-btn active" onclick="switchTab('windows',this)">Windows</button>
+    <button class="tab-btn" onclick="switchTab('cuts',this)">Profile Cuts</button>
+    <button class="tab-btn" onclick="switchTab('hardware',this)">Hardware</button>
+    <button class="tab-btn" onclick="switchTab('bars',this)">Bar Optimiser</button>
+    <button class="tab-btn" onclick="switchTab('quote',this)">Quotation</button>
+  </div>
+
+  <!-- Tab: Windows -->
+  <div class="tab-content active" id="tab_windows">
+    
+    ${windows.map((w,i) => `
+      <div class="win-result">
+        <div class="win-result-head" onclick="toggleResult(${i})">
+          <div class="win-code">${w.code}</div>
+          <div class="win-meta">
+            <strong>${w.typology}</strong>
+            <span>${w.size} · qty ${w.qty}</span>
+          </div>
+          <div class="win-total">₹${fmt(w.costs.total)}</div>
+          <div style="margin-left:10px;color:var(--fog);font-size:12px;" id="rarrow_${i}">▼</div>
+        </div>
+        <div class="win-result-body" id="rbody_${i}">
+          <div class="cost-breakdown">
+            <div class="cost-item"><div class="c-label">Profiles</div><div class="c-val">₹${fmt(w.costs.profile)}</div></div>
+            <div class="cost-item"><div class="c-label">Glass</div><div class="c-val">₹${fmt(w.costs.glass)}</div></div>
+            <div class="cost-item"><div class="c-label">Hardware</div><div class="c-val">₹${fmt(w.costs.hardware)}</div></div>
+            <div class="cost-item"><div class="c-label">Finish</div><div class="c-val">₹${fmt(w.costs.finish)}</div></div>
+          </div>
+          <div class="section-title">Profile Cuts</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Profile</th><th>Length (mm)</th><th>Pcs/Unit</th><th>Total Pcs</th></tr></thead>
+              <tbody>
+                ${w.profile_cuts.map(pc => `
+                  <tr><td>${pc.label}</td><td>${pc.length}</td><td>${pc.count}</td><td>${pc.total_pcs}</td></tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <br>
+          <div class="section-title">Glass</div>
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;">
+            Type: <b>${w.glass}</b> &nbsp;·&nbsp; Size: <b>${w.glass_size}</b> &nbsp;·&nbsp; Total Area: <b>${w.glass_area} m²</b>
+          </div>
+          <br>
+          <div class="section-title">Hardware</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Item</th><th>Qty</th></tr></thead>
+              <tbody>
+                ${Object.entries(w.hardware).map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+
+  <!-- Tab: Profile Cuts (consolidated) -->
+  <div class="tab-content" id="tab_cuts">
+    
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Code</th><th>Profile</th><th>Cut (mm)</th><th>Pcs/Unit</th><th>Total Pcs</th><th>Total (m)</th></tr></thead>
+        <tbody>
+          ${windows.flatMap(w => w.profile_cuts.map(pc => {
+            const total_m = (pc.length * pc.total_pcs / 1000).toFixed(3);
+            return `<tr><td>${w.code}</td><td>${pc.label}</td><td>${pc.length}</td><td>${pc.count}</td><td>${pc.total_pcs}</td><td>${total_m}</td></tr>`;
+          })).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tab: Hardware -->
+  <div class="tab-content" id="tab_hardware">
+    
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Total Qty</th></tr></thead>
+        <tbody>
+          ${Object.entries(hardware_total).map(([k,v],i) => `
+            <tr><td>${k}</td><td>${v}</td></tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tab: Bar Optimiser -->
+  <div class="tab-content" id="tab_bars">
+    
+    <div class="bar-chart">
+      ${Object.entries(bar_summary).map(([prof, s]) => `
+        <div class="bar-item">
+          <div class="bar-meta">
+            <span class="b-profile">${prof}</span>
+            <span class="b-stat">${s.bars} bars · ${s.used}m used / ${s.total_len}m total · Waste: ${s.waste}m</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${s.util}%">
+              <span>${s.util}% utilised</span>
+            </div>
+            <div class="bar-waste" style="width:${(100-s.util).toFixed(1)}%">${(100-s.util).toFixed(1)}% waste</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <br>
+    ${Object.entries(bar_summary).map(([prof, s]) => `
+      <div class="section-title">${prof} – Bar Detail</div>
+      <div class="tbl-wrap" style="margin-bottom:14px;">
+        <table>
+          <thead><tr><th>Bar #</th><th>Used (mm)</th><th>Waste (mm)</th><th>Util %</th><th>Cuts</th></tr></thead>
+          <tbody>
+            ${s.detail.map(b => `
+              <tr>
+                <td>Bar ${b.bar}</td>
+                <td>${b.used}</td>
+                <td>${b.waste}</td>
+                <td>${b.util}%</td>
+                <td style="font-size:10px;max-width:200px;white-space:normal;">${b.cuts.slice(0,5).map(c=>c.len+'mm').join(', ')}${b.cuts.length>5?` +${b.cuts.length-5} more`:''}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `).join('')}
+  </div>
+
+  <!-- Tab: Quotation -->
+  <div class="tab-content" id="tab_quote">
+    
+    <div class="tbl-wrap" style="margin-bottom:14px;">
+      <table>
+        <thead><tr><th>Code</th><th>Description</th><th>Qty</th><th>Unit Cost</th><th>Total</th></tr></thead>
+        <tbody>
+          ${windows.map(w => `
+            <tr>
+              <td>${w.code}</td>
+              <td>${w.typology} ${w.size} · ${w.glass} · ${w.finish}${w.mesh?' · Mesh':''}</td>
+              <td>${w.qty}</td>
+              <td>₹${fmt(w.costs.subtotal / w.qty)}</td>
+              <td>₹${fmt(w.costs.subtotal)}</td>
+            </tr>
+          `).join('')}
+          <tr class="total-row">
+            <td colspan="3"></td><td>Subtotal</td><td>₹${fmt(grand_total_ex_gst)}</td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="3"></td><td>GST 18%</td><td>₹${fmt(gst)}</td>
+          </tr>
+          <tr class="total-row" style="background:rgba(201,146,42,.25)!important;">
+            <td colspan="3"></td><td>GRAND TOTAL</td><td>₹${fmt(grand_total)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--fog);line-height:1.6;">
+      ✦ Prices valid for 30 days from date of quotation. ✦ 50% advance payment required to confirm order.
+      ✦ Delivery 4–6 weeks from advance receipt. ✦ Installation charges separate unless specified.
+      ✦ All prices exclusive of transportation.
+    </p>
+    <div style="margin-top:14px;display:flex;gap:10px;">
+      <button class="btn btn-gold" onclick="downloadPDF()">⬇ Download PDF Quotation</button>
+      <button class="btn btn-blue" onclick="downloadExcel()">⬇ Download Excel BOQ</button>
+    </div>
+  </div>
+  `;
+
+  document.getElementById('resultsBody').innerHTML = html;
+}
+
+function toggleResult(i) {
+  const body = document.getElementById(`rbody_${i}`);
+  const arrow = document.getElementById(`rarrow_${i}`);
+  body.classList.toggle('open');
+  if(arrow) arrow.textContent = body.classList.contains('open') ? '▲' : '▼';
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab_' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Downloads ──────────────────────────────────────────────────
+async function downloadPDF() {
+  if (!lastResults) { toast('Calculate first', 'error'); return; }
+  toast('Generating PDF…');
+  const resp = await fetch('/download/pdf/', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(lastResults),
+  });
+  if (!resp.ok) { toast('PDF generation failed', 'error'); return; }
+  const blob = await resp.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='CutFlow_quotation.pdf'; a.click();
+  toast('PDF downloaded!', 'success');
+}
+
+async function downloadExcel() {
+  if (!lastResults) { toast('Calculate first', 'error'); return; }
+  toast('Generating Excel…');
+  const resp = await fetch('/download/excel/', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(lastResults),
+  });
+  if (!resp.ok) { toast('Excel generation failed', 'error'); return; }
+  const blob = await resp.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='CutFlow_boq.xlsx'; a.click();
+  toast('Excel downloaded!', 'success');
+}
+
+// ── Sample Data ────────────────────────────────────────────────
+function loadSample() {
+  windowData = []; idCounter = 0;
+  const samples = [
+    {code:'W01', width:1200, height:1050, typology:'sliding',  glass_type:'clear_4',    finish:'powder',  mesh:true,  qty:4},
+    {code:'W02', width:900,  height:1200, typology:'casement', glass_type:'tinted_5',   finish:'anodised',mesh:false, qty:2},
+    {code:'D01', width:1800, height:2100, typology:'door_sliding', glass_type:'tempered_6', finish:'powder', mesh:false, qty:1},
+    {code:'W03', width:600,  height:900,  typology:'fixed',    glass_type:'frosted_5',  finish:'mill',    mesh:false, qty:6},
+  ];
+  samples.forEach(s => addWindow(s));
+  toast('Sample data loaded!', 'success');
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function fmt(n) {
+  return Number(n).toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+
+function toast(msg, type='info') {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : '';
+}
+
+// ── Init ───────────────────────────────────────────────────────
+renderList();
+// ── Authentication & Database Functions ───────────────────────
+
+// 1. Logout
+async function logoutUser() {
+  try {
+    await fetch('/api/logout/');
+    window.location.href = '/login/';
+  } catch(e) {
+    toast('Logout failed', 'error');
+  }
+}
+
+// 2. Save Project to Database
+async function saveProjectToDB() {
+  if (windowData.length === 0) { toast('Add at least one window to save.', 'error'); return; }
+  
+  const projectName = prompt("Enter a name for this project:", "My Window Project");
+  if (!projectName) return; // User cancelled
+
+  const btn = document.getElementById('saveDbBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try {
+    const resp = await fetch('/api/save_project/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_name: projectName,
+        windows: windowData
+      })
+    });
+    
+    const data = await resp.json();
+    if (resp.ok) {
+      toast('Project saved successfully!', 'success');
+    } else {
+      toast(data.error || 'Failed to save', 'error');
+    }
+  } catch(e) {
+    toast('Network error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 Save Project';
+  }
+}
+
+// 3. Fetch & Show Projects in Modal
+async function showMyProjects() {
+  const modal = document.getElementById('projectsModal');
+  const list = document.getElementById('projectsList');
+  modal.style.display = 'flex';
+  list.innerHTML = '<div class="spinner" style="margin: 20px auto;"></div>';
+  
+  try {
+    const resp = await fetch('/api/get_projects/');
+    const data = await resp.json();
+    
+    if (resp.ok) {
+      if (data.projects.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:var(--fog); padding:20px;">No saved projects yet. Create one and click Save!</p>';
+        return;
+      }
+      
+      let html = '<div style="display:flex; flex-direction:column; gap:12px;">';
+      data.projects.forEach(p => {
+        // Encode the window data so we can pass it to the load function
+        const winDataStr = encodeURIComponent(JSON.stringify(p.windows));
+        html += `
+          <div class="window-card" style="padding:16px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="wcard-title" style="color:var(--gold2); font-size:14px; margin-bottom:4px;">${p.name}</div>
+              <div class="wcard-subtitle">Saved: ${p.created_at} · ${p.windows.length} items</div>
+            </div>
+            <button class="btn btn-blue btn-sm" onclick="loadProjectFromDB('${winDataStr}')">Load Data</button>
+          </div>
+        `;
+      });
+      html += '</div>';
+      list.innerHTML = html;
+    }
+  } catch(e) {
+    list.innerHTML = '<p style="text-align:center; color:var(--red);">Error loading projects.</p>';
+  }
+}
+
+// 4. Load a Saved Project into the UI
+function loadProjectFromDB(winDataStr) {
+  const windows = JSON.parse(decodeURIComponent(winDataStr));
+  windowData = [];
+  idCounter = 0;
+  
+  // Rebuild the UI array
+  windows.forEach(w => {
+    const id = ++idCounter;
+    windowData.push({ id, ...w });
+  });
+  
+  document.getElementById('projectsModal').style.display = 'none';
+  toast('Project loaded into schedule!', 'success');
+  
+  // Optional: Auto-calculate when loaded
+  calculate(); 
+  renderList();
+} 
+  // ── Init ───────────────────────────────────────────────────────
+
+
+
+  
+  renderList();
+  window.addEventListener('load', () => {
+  const pre = document.getElementById('preloader');
+  if (!pre) return;
+  setTimeout(() => {
+    pre.classList.add('fade-out');
+  }, 1500); // loader stays ~2s before fading
+});
+
+</script>
+</body>
+</html>
