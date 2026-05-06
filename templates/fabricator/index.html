@@ -591,7 +591,7 @@ tbody td:first-child { font-weight: 500; color: var(--white); }
     <div style="display: flex; gap: 12px; align-items: center;">
       {% if request.user.is_authenticated %}
         <div class="badge" style="background: rgba(39,103,73,.3); border-color: #276749; color: #68D391;">
-          👤 {{ request.user.username }}
+           {{ request.user.username }}
         </div>
         <button class="btn btn-ghost btn-sm" onclick="showMyProjects()"> My Projects</button>
         <button class="btn btn-ghost btn-sm" onclick="logoutUser()"> Logout</button>
@@ -621,7 +621,7 @@ tbody td:first-child { font-weight: 500; color: var(--white); }
             <div style="display: flex; gap: 10px;">
               <button class="btn btn-ghost btn-sm" onclick="loadSample()">Load Sample</button>
               {% if request.user.is_authenticated %}
-                <button class="btn btn-blue btn-sm" id="saveDbBtn" onclick="saveProjectToDB()">💾 Save Project</button>
+                <button class="btn btn-blue btn-sm" id="saveDbBtn" onclick="saveProjectToDB()"> Save Project</button>
               {% endif %}
             </div>
           </div>
