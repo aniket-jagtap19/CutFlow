@@ -1,10 +1,16 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'CutFlow-dev-secret-key-2026'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+
+# ✅ FIX: fallback added to prevent crash if env not set
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
+
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+# ✅ FIX: required for Render (can still work locally)
+ALLOWED_HOSTS = ['.onrender.com', '127.0.0.1', 'localhost']
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -13,12 +19,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'fabricator',
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ correct placement
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -27,15 +34,19 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 ROOT_URLCONF = 'CutFlow.urls'
 
+
+# ✅ REQUIRED for admin (your earlier error)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'templates'],  # make sure this folder exists
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -44,16 +55,17 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'CutFlow.wsgi.application'
 
-# ── MySQL Database ────────────────────────────────────────────────────────────
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'cutflow_db'),
-        'USER': os.environ.get('DB_USER', 'cutflow_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'your_password_here'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
         'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
@@ -61,8 +73,16 @@ DATABASES = {
         },
     }
 }
-# ─────────────────────────────────────────────────────────────────────────────
 
+# ✅ STATIC CONFIG (correct for WhiteNoise + Render)
 STATIC_URL = '/static/'
+
+# ⚠️ Only keep this if folder exists
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
